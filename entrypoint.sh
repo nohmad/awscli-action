@@ -10,4 +10,10 @@ cli_binary_format = raw-in-base64-out
 EOF
 fi
 
-sh -c "aws $*"
+TEMP=$(mktemp)
+sh -c "aws $*" > $TEMP
+if [ -z "$JQ_EXPRESSION" ]; then
+  echo "::set-output name=result::$(cat ${TEMP})"
+else
+  echo "::set-output name=result::$(cat ${TEMP} | jq --monochrome-output --raw-output ${JQ_EXPRESSION})"
+fi
